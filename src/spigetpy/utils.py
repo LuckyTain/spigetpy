@@ -1,3 +1,5 @@
+from json import JSONDecodeError
+
 import requests
 
 __all__ = [
@@ -34,4 +36,8 @@ async def spiget_request(type: str, url: str, headers: dict = None, params: dict
         return "Err: Unknown; An unknown error has occured"
     #except requests.Timeout:
     #    return "Err: requests.Timeout; The request timed out."
-    return r.json()
+    try:
+        result = r.json()
+    except JSONDecodeError:
+        result = r.content
+    return result
