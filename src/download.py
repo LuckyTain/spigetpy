@@ -8,7 +8,7 @@ async def download_by_resource_id(resource_id, directory):
     file_type = detail["file"]["type"]
     file = await r_download(resource_id)
     try:
-        with open(f"{directory}/{name}.{file_type}", "wb") as f:
+        with open(f"{directory}/{name}{file_type}", "wb") as f:
             f.write(file)
     except Exception as e:
         print(f"Error: {e}")
