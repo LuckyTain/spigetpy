@@ -57,11 +57,23 @@ jobs:
           pyinstaller --onefile --clean --distpath ./dist/${{ matrix.os }}-${{ matrix.arch }} src/download.py
 
       - name: Upload binary artifact
+        if: ${{ matrix.os == 'windows-latest' }}
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.create_release.outputs.upload_url }}
-          asset_path: ./dist/${{ matrix.os }}-${{ matrix.arch }}/download${{ matrix.os == 'windows-latest' ? '.exe':'' }}
-          asset_name: spiget-${{ matrix.os }}-${{ matrix.arch }}{{ matrix.os == 'windows-latest' ? '.exe':'' }}
+          asset_path: ./dist/${{ matrix.os }}-${{ matrix.arch }}/download.exe
+          asset_name: spiget-${{ matrix.os }}-${{ matrix.arch }}.exe
+          asset_content_type: application/octet-stream
+
+      - name: Upload binary artifact
+        if: ${{ matrix.os != 'windows-latest' }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          asset_path: ./dist/${{ matrix.os }}-${{ matrix.arch }}/download
+          asset_name: spiget-${{ matrix.os }}-${{ matrix.arch }}
           asset_content_type: application/octet-stream
