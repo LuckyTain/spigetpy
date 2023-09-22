@@ -6,8 +6,26 @@ on:
       - v*
 
 jobs:
+  create_release:
+    name: Create release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          draft: false
+          prerelease: false
+  
   build:
     runs-on: ${{ matrix.os }}
+    needs: create_release
 
     strategy:
       matrix:
@@ -36,25 +54,14 @@ jobs:
 
       - name: Build binary
         run: |
-          pyinstaller --onefile --distpath ./dist/${{ matrix.os }}-${{ matrix.arch }} src/download.py
-
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
-          draft: false
-          prerelease: false
+          pyinstaller --onefile --clean --distpath ./dist/${{ matrix.os }}-${{ matrix.arch }} src/download.py
 
       - name: Upload binary artifact
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/${{ matrix.os }}-${{ matrix.arch }}/download
-          asset_name: spiget-${{ matrix.os }}-${{ matrix.arch }}
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          asset_path: ./dist/${{ matrix.os }}-${{ matrix.arch }}/download${{ matrix.os == 'windows-latest' ? '.exe':'' }}
+          asset_name: spiget-${{ matrix.os }}-${{ matrix.arch }}{{ matrix.os == 'windows-latest' ? '.exe':'' }}
           asset_content_type: application/octet-stream
