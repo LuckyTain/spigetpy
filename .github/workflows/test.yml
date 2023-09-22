@@ -36,7 +36,7 @@ jobs:
 
       - name: Build binary
         run: |
-          pyinstaller --onefile src/download.py
+          pyinstaller --onefile --distpath ./dist/${{ matrix.os }}-${{ matrix.arch }} src/download.py
 
       - name: Create Release
         id: create_release
@@ -55,6 +55,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/download
+          asset_path: ./dist/${{ matrix.os }}-${{ matrix.arch }}/download
           asset_name: spiget-${{ matrix.os }}-${{ matrix.arch }}
           asset_content_type: application/octet-stream
